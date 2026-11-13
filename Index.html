@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FootZone</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080e1b;color:white;font-family:Arial,sans-serif}
+header{padding:22px 18px;background:#101c32;border-bottom:1px solid #243958}
+.logo{font-size:28px;font-weight:900;color:#55a4ff}
+.logo span{color:white}
+header p{color:#a9bad2;margin-bottom:0}
+main{padding:18px;max-width:650px;margin:auto}
+.card{background:#111e34;border:1px solid #263c5e;border-radius:18px;padding:20px;margin-bottom:17px}
+h2{margin-top:0}
+.muted{color:#9aabc4}
+.points{font-size:30px;font-weight:bold;color:#62aaff}
+button{background:#287df0;color:white;border:0;border-radius:12px;padding:14px 18px;font-size:16px;font-weight:bold;width:100%;margin-top:10px}
+button:active{transform:scale(.98)}
+.answer{background:#1b2c48;border:1px solid #35527b}
+nav{display:flex;gap:8px;margin-bottom:18px}
+nav button{margin:0;padding:12px 5px;font-size:13px}
+.hidden{display:none}
+#result{font-weight:bold;margin-top:15px}
+footer{text-align:center;color:#7487a5;padding:25px}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">FOOT<span>ZONE</span> ⚽</div>
+ <p>Your football world starts here.</p>
+</header>
+<main>
+ <div class="card">
+  <p class="muted">WELCOME TO FOOTZONE</p>
+  <h2>Футбол — это больше, чем игра.</h2>
+  <p class="muted">Проверяй знания, угадывай игроков и зарабатывай очки!</p>
+ </div>
+
+ <div class="card">
+  <p class="muted">ТВОЙ ПРОФИЛЬ</p>
+  <div class="points" id="points">0 XP</div>
+  <p class="muted">Твои очки на этом устройстве</p>
+ </div>
+
+ <nav>
+  <button onclick="show('quiz')">Викторина</button>
+  <button onclick="show('player')">Игрок</button>
+  <button onclick="show('daily')">Задание</button>
+ </nav>
+
+ <section id="quiz" class="card">
+  <h2>⚽ Футбольная викторина</h2>
+  <p id="question">Какую страну представляет Лионель Месси?</p>
+  <div id="answers"></div>
+  <p id="result"></p>
+ </section>
+
+ <section id="player" class="card hidden">
+  <h2>🕵️ Угадай игрока</h2>
+  <p>Я выиграл 8 Золотых мячей. Кто я?</p>
+  <button class="answer" onclick="guess('Роналду')">Криштиану Роналду</button>
+  <button class="answer" onclick="guess('Месси')">Лионель Месси</button>
+  <button class="answer" onclick="guess('Неймар')">Неймар</button>
+  <p id="playerResult"></p>
+ </section>
+
+ <section id="daily" class="card hidden">
+  <h2>🔥 Задание дня</h2>
+  <p>Назови клуб, который выиграл Лигу чемпионов в 2023 году.</p>
+  <button class="answer" onclick="daily('Манчестер Сити')">Манчестер Сити</button>
+  <button class="answer" onclick="daily('Интер')">Интер</button>
+  <button class="answer" onclick="daily('Реал Мадрид')">Реал Мадрид</button>
+  <p id="dailyResult"></p>
+ </section>
+
+ <div class="card">
+  <h2>🏆 Таблица лидеров</h2>
+  <p class="muted">Глобальный рейтинг появится в следующей версии.</p>
+  <p>1. Ты — <b id="rank">0 XP</b></p>
+ </div>
+</main>
+<footer>FOOTZONE © 2026</footer>
+
+<script>
+let xp = Number(localStorage.getItem('fzxp') || 0);
+let answered = false;
+let playerDone = false;
+let dailyDone = false;
+
+function update(){
+ document.getElementById('points').textContent=xp+' XP';
+ document.getElementById('rank').textContent=xp+' XP';
+ localStorage.setItem('fzxp',xp);
+}
+function show(id){
+ ['quiz','player','daily'].forEach(x=>
+ document.getElementById(x).classList.add('hidden'));
+ document.getElementById(id).classList.remove('hidden');
+}
+function addPoints(n){
+ xp+=n;
+ update();
+}
+let options=[
+ ['Аргентина',['Аргентина','Бразилия','Испания'],0],
+ ['Кто выиграл ЧМ 2022?',['Франция','Аргентина','Германия'],1],
+ ['В каком клубе играет Ламин Ямаль?',['Реал Мадрид','Барселона','ПСЖ'],1]
+];
+let qi=0;
+function loadQuestion(){
+ answered=false;
+ let q=options[qi];
+ document.getElementById('question').textContent=q[0];
+ document.getElementById('result').textContent='';
+ let a=document.getElementById('answers');
+ a.innerHTML='';
+ q[1].forEach((v,i)=>{
+ let b=document.createElement('button');
+ b.className='answer';
+ b.textContent=v;
+ b.onclick=()=>answer(i);
+ a.appendChild(b);
+ });
+}
+function answer(i){
+ if(answered)return;
+ answered=true;
+ if(i===options[qi][2]){
+ addPoints(10);
+ document.getElementById('result').textContent='✅ Правильно! +10 XP';
+ }else{
+ document.getElementById('result').textContent='❌ Неправильно!';
+ }
+ setTimeout(()=>{
+ qi=(qi+1)%options.length;
+ loadQuestion();
+ },1300);
+}
+function guess(v){
+ if(playerDone)return;
+ playerDone=true;
+ if(v==='Месси'){
+ addPoints(15);
+ document.getElementById('playerResult').textContent='🔥 Верно! +15 XP';
+ }else{
+ document.getElementById('playerResult').textContent='❌ Это был Месси!';
+ }
+}
+function daily(v){
+ if(dailyDone)return;
+ dailyDone=true;
+ if(v==='Манчестер Сити'){
+ addPoints(20);
+ document.getElementById('dailyResult').textContent='🏆 Правильно! +20 XP';
+ }else{
+ document.getElementById('dailyResult').textContent='❌ Попробуй завтра!';
+ }
+}
+loadQuestion();
+update();
+</script>
+</body>
+</html>
